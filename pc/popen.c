@@ -26,9 +26,6 @@
 #include <process.h>
 #include <errno.h>
 #include "popen.h"
-#undef popen
-#undef pclose
-#undef system
 
 #ifndef _NFILE
 #define _NFILE 40

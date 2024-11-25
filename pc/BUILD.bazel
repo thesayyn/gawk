@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+exports_files(["config.h"])
+
+cc_library(
+    name = "pc",
+    hdrs = glob(["*.h"]) + ["gawkmisc.pc"],
+    srcs = glob(["*.c"]),
+    defines = [
+        "__MINGW32__",
+        "__USE_MINGW_ANSI_STDIO",
+        'LOCALEDIR="\\\"c:/gnu/share/locale\\\""',
+        'DEFLIBPATH="\\\"c:/gnu/lib/gawk\\\""',
+        'SHLIBEXT="\\\"dll\\\""'
+    ],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,15 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+exports_files(["config_darwin.h", "config_linux.h"])
+
+cc_library(
+    name = "posix",
+    hdrs = ["gawkmisc.c"],
+    defines = [
+        """LOCALEDIR='"/usr/local/share/locale"'""",
+        'DEFLIBPATH="\\\"/usr/local/lib/gawk\\\""',
+        'SHLIBEXT="\\\"so\\\""',
+        """DEFPATH='".:/usr/local/share/awk"'"""
+    ],
+    visibility = ["//visibility:public"],
+)
