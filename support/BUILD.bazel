@@ -1,0 +1,42 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+INCLUDES = select({
+    "@platforms//os:windows": [
+        ".",
+        "./malloc",
+        "../pc"
+    ],
+    "//conditions:default": [
+        ".",
+        "./malloc",
+        "../posix"
+    ],
+})
+
+cc_library(
+    name = "support",
+    hdrs = glob(["*.h", "malloc/*.h"]) + [
+        "regex_internal.c", "regcomp.c", "regexec.c",
+        "malloc/dynarray-skeleton.c",
+    ],
+    srcs = [
+        "getopt.c",
+        "getopt1.c",
+        "dfa.c",
+        "random.c",
+        "localeinfo.c",
+        "regex.c",
+        "malloc/dynarray_resize.c",
+        "malloc/dynarray_emplace_enlarge.c",
+        "malloc/dynarray_finalize.c",
+        "malloc/dynarray_at_failure.c",
+        "malloc/dynarray_resize_clear.c"
+    ],
+    includes = INCLUDES,
+    deps = [
+        "//:config",
+        "//:gettext",
+        "//:custom",
+    ],
+    visibility = ["//visibility:public"],
+)

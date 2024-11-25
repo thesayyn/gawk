@@ -1,0 +1,75 @@
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@aspect_bazel_lib//lib:diff_test.bzl", "diff_test")
+
+write_file(
+    name = "wrapper",
+    is_executable = True,
+    content = [
+        "#!/bin/sh",
+        "REALEXEC=$(realpath $1)",
+        "export GAWK=$(realpath $2)",
+        "export AWK=$(realpath $2)",
+        "cd test",
+        "$REALEXEC"
+    ],
+    out = "wrapper.sh"
+)
+
+SHELL_WRAPPED_TESTS = [
+    TEST.replace(".sh", "")
+    for TEST in glob(["*.sh"])
+]
+
+[
+    sh_test(
+        name = TEST,
+        srcs = ["wrapper.sh"],
+        data = glob([TEST  ".awk"])  [":{}.sh".format(TEST), "//:gawk"],
+        args = ["$(location {}.sh)".format(TEST), "$(location //:gawk)"],
+    )
+    for TEST in SHELL_WRAPPED_TESTS
+]
+
+
+AWKS = [awk.replace(".awk", "") for awk in glob(["*.awk"])]
+
+AWKS = AWKS[:10]
+
+IN = [inn.replace(".in", "") for inn in glob(["*.in"])]
+
+OK = [ok.replace(".ok", "") for ok in glob(["*.ok"])]
+
+
+AWK_TESTS = [
+    AWK for AWK in AWKS if
+    # exclude shell wrapped tests
+    AWK not in SHELL_WRAPPED_TESTS
+]
+
+[
+    genrule(
+        name = AWK  "_gen",
+        srcs = glob([AWK  ".ok", AWK  ".in"])  [
+            AWK  ".awk",
+            "//:gawk",
+        ],
+        outs = [AWK  "_gen.out"],
+        cmd = """
+$(location  //:gawk) -f $(location {AWK}.awk) < {IN} > $@ || echo "EXIT CODE: $$?" >> $@
+        """.format(
+            AWK = AWK,
+            IN = "/dev/null" if AWK not in IN else "$(location {}.in)".format(AWK)
+        )
+    )
+    for AWK in AWK_TESTS
+]
+
+[
+    diff_test(
+        name = AWK  "_test",
+        file1 = AWK  "_gen.out",
+        file2 = AWK  ".ok",
+    )
+    for AWK in AWK_TESTS
+    if AWK in OK
+]

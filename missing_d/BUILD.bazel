@@ -1,0 +1,10 @@
+filegroup(
+    name = "missing_d",
+    srcs = [
+        "strncasecmp.c",
+        "strftime.c",
+        "timegm.c",
+        "strcoll.c",
+    ],
+    visibility = ["//visibility:public"]
+)
